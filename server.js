@@ -4,12 +4,12 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 
+// Load environment variables
+dotenv.config();
+
 // Import Routes
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
-
-// Load environment variables
-dotenv.config();
 
 // Initialize Express app
 const app = express();
@@ -22,19 +22,18 @@ app.use(cors());
 app.use("/img", express.static(path.join(__dirname, "img")));
 
 // MongoDB connection
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("MongoDB connected");
-  } catch (err) {
-    console.error("MongoDB connection error:", err);
-    process.exit(1); // Exit process with failure
-  }
+const uri = process.env.MONGO_URI; // Store your full MongoDB URI in .env
+const clientOptions = {
+  serverApi: { version: '1', strict: true, deprecationErrors: true }
 };
-connectDB();
+
+mongoose.connect(uri, clientOptions)
+  .then(() => {
+    console.log("Connected to MongoDB successfully");
+  })
+  .catch(err => {
+    console.error("Error connecting to MongoDB:", err);
+  });
 
 // Routes
 app.use("/api/auth", authRoutes);
